@@ -84,14 +84,88 @@ select employee_name
 from works 
 where company_name != 'Sonali';
 
+-- Find all employees who earn more than each employee of "Janata" Bank.
+
 SELECT e.employee_name
-FROM employee AS e
-JOIN works AS w ON e.employee_name = w.employee_name
-WHERE w.salary > ALL (
-    SELECT w2.salary
-    FROM works AS w2
-    WHERE w2.company_name = 'Janata'
+FROM works e
+WHERE e.salary > ALL (
+    SELECT w.salary
+    FROM works w
+    WHERE w.company_name = 'Janata'
 );
+
+-- Find all employees who earn more than the average salary of all employees of their companies.
+
+SELECT w.employee_name
+FROM works w
+JOIN (
+    SELECT company_name, AVG(salary) AS avg_salary
+    FROM works
+    GROUP BY company_name
+) avg_salaries ON w.company_name = avg_salaries.company_name
+WHERE w.salary > avg_salaries.avg_salary;
+
+-- Find the company that has the most employees.
+SELECT company_name
+FROM works
+GROUP BY company_name
+ORDER BY COUNT(employee_name) DESC
+LIMIT 1;
+
+--  Find the company that has the smallest payroll.
+SELECT company_name
+FROM works
+GROUP BY company_name
+ORDER BY SUM(salary) ASC
+LIMIT 1;
+
+-- Find those companies whose employees earn a higher salary, on average, than the average salary at "Agrani".
+
+SELECT company_name
+FROM (
+    SELECT company_name, AVG(salary) AS avg_salary
+    FROM works
+    GROUP BY company_name
+) avg_salaries
+WHERE avg_salary > (
+    SELECT AVG(salary)
+    FROM works
+    WHERE company_name = 'Agrani'
+);
+
+-- Modify the database so that "Arif" now lives in Natore
+UPDATE works
+SET salary = salary * 1.10
+WHERE company_name = 'Agrani';
+
+-- Give all managers of "Agrani" Bank a 10% salary raise.
+UPDATE works
+SET salary = salary * 1.10
+WHERE employee_name IN (
+    SELECT employee_name
+    FROM manages
+) AND company_name = 'Agrani';
+
+--  Give all managers a 10% salary raise unless their salary becomes greater than 19,000; in such cases, give only a 3% salary raise.
+UPDATE works
+SET salary = CASE
+    WHEN salary * 1.10 <= 19000 THEN salary * 1.10
+    ELSE salary * 1.03
+END
+WHERE employee_name IN (SELECT employee_name FROM manages);
+
+-- Delete all tuples in the works relation for employees of "Janata" Bank.
+DELETE FROM works
+WHERE company_name = 'Janata';
+
+-- Define a view consisting of manager-name and average salary of all employees who work for that manager.
+CREATE VIEW manager_avg_salary AS
+SELECT m.manager_name, AVG(w.salary) AS avg_salary
+FROM manages m
+JOIN works w ON m.employee_name = w.employee_name
+GROUP BY m.manager_name;
+
+
 
 
 
