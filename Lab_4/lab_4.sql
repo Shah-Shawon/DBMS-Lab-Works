@@ -122,12 +122,9 @@ LIMIT 1;
 -- Find those companies whose employees earn a higher salary, on average, than the average salary at "Agrani".
 
 SELECT company_name
-FROM (
-    SELECT company_name, AVG(salary) AS avg_salary
-    FROM works
-    GROUP BY company_name
-) avg_salaries
-WHERE avg_salary > (
+FROM works 
+GROUP by company_name
+HAVING AVG(salary)>(
     SELECT AVG(salary)
     FROM works
     WHERE company_name = 'Agrani'
