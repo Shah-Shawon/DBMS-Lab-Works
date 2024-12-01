@@ -96,14 +96,14 @@ WHERE e.salary > ALL (
 
 -- Find all employees who earn more than the average salary of all employees of their companies.
 
-SELECT w.employee_name
+SELECT employee_name
 FROM works w
-JOIN (
-    SELECT company_name, AVG(salary) AS avg_salary
-    FROM works
-    GROUP BY company_name
-) avg_salaries ON w.company_name = avg_salaries.company_name
-WHERE w.salary > avg_salaries.avg_salary;
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM works w2
+    WHERE w2.company_name = w.company_name
+);
+
 
 -- Find the company that has the most employees.
 SELECT company_name
